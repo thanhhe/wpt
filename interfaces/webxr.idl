@@ -10,10 +10,16 @@ partial interface Navigator {
 [SecureContext, Exposed=Window] interface XR : EventTarget {
   // Methods
   Promise<void> supportsSessionMode(XRSessionMode mode);
-  Promise<XRSession> requestSession(optional XRSessionCreationOptions parameters);
+  Promise<XRSession> requestSession(XRSessionMode mode);
 
   // Events
   attribute EventHandler ondevicechange;
+};
+
+enum XRSessionMode {
+  "inline",
+  "immersive-vr",
+  "immersive-ar"
 };
 
 enum XREnvironmentBlendMode {
@@ -24,8 +30,6 @@ enum XREnvironmentBlendMode {
 
 [SecureContext, Exposed=Window] interface XRSession : EventTarget {
   // Attributes
-  readonly attribute XRSessionMode mode;
-  readonly attribute XRPresentationContext? outputContext;
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
   readonly attribute XRRenderState renderState;
   readonly attribute XRSpace viewerSpace;
@@ -51,27 +55,20 @@ enum XREnvironmentBlendMode {
   attribute EventHandler onselectend;
 };
 
-enum XRSessionMode {
-  "inline",
-  "immersive-vr",
-  "immersive-ar"
-};
-
-dictionary XRSessionCreationOptions {
-  XRSessionMode mode = "inline";
-  XRPresentationContext? outputContext = null;
-};
-
 dictionary XRRenderStateInit {
   double depthNear;
   double depthFar;
+  double inlineVerticalFieldOfView;
   XRLayer? baseLayer;
+  XRPresentationContext? outputContext;
 };
 
 [SecureContext, Exposed=Window] interface XRRenderState {
   readonly attribute double depthNear;
   readonly attribute double depthFar;
+  readonly attribute double? inlineVerticalFieldOfView;
   readonly attribute XRLayer? baseLayer;
+  readonly attribute XRPresentationContext? outputContext;
 };
 
 callback XRFrameRequestCallback = void (DOMHighResTimeStamp time, XRFrame frame);
@@ -112,7 +109,6 @@ dictionary XRReferenceSpaceOptions {
 
 [SecureContext, Exposed=Window]
 interface XRStationaryReferenceSpace : XRReferenceSpace {
-  readonly attribute XRStationaryReferenceSpaceSubtype subtype;
 };
 
 [SecureContext, Exposed=Window]
@@ -149,8 +145,7 @@ interface XRRigidTransform {
   readonly attribute DOMPointReadOnly position;
   readonly attribute DOMPointReadOnly orientation;
   readonly attribute Float32Array matrix;
-
-  XRRigidTransform inverse();
+  [SameObject] readonly attribute XRRigidTransform inverse;
 };
 
 [SecureContext, Exposed=Window,
@@ -189,6 +184,13 @@ interface XRInputSource {
   readonly attribute XRTargetRayMode targetRayMode;
   readonly attribute XRSpace targetRaySpace;
   readonly attribute XRSpace? gripSpace;
+  readonly attribute Gamepad? gamepad;
+};
+
+enum GamepadMappingType {
+  "",            // Defined in the Gamepad API
+  "standard",    // Defined in the Gamepad API
+  "xr-standard",
 };
 
 [SecureContext, Exposed=Window] interface XRLayer {};
@@ -213,9 +215,6 @@ interface XRWebGLLayer : XRLayer {
   readonly attribute XRWebGLRenderingContext context;
 
   readonly attribute boolean antialias;
-  readonly attribute boolean depth;
-  readonly attribute boolean stencil;
-  readonly attribute boolean alpha;
   readonly attribute boolean ignoreDepthValues;
 
   readonly attribute WebGLFramebuffer framebuffer;
@@ -255,11 +254,13 @@ dictionary XRSessionEventInit : EventInit {
 interface XRInputSourceEvent : Event {
   readonly attribute XRFrame frame;
   readonly attribute XRInputSource inputSource;
+  readonly attribute long? buttonIndex;
 };
 
 dictionary XRInputSourceEventInit : EventInit {
   required XRFrame frame;
   required XRInputSource inputSource;
+  long? buttonIndex = null;
 };
 
 [SecureContext, Exposed=Window, Constructor(DOMString type, XRReferenceSpaceEventInit eventInitDict)]

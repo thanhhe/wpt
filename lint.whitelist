@@ -93,8 +93,8 @@ AHEM COPY: css/vendor-imports/mozilla/mozilla-central-reftests/*/Ahem.ttf
 # Intentional use of CRLF
 CR AT EOL: WebIDL/valid/idl/documentation-dos.widl
 CR AT EOL: cors/resources/cors-headers.asis
-CR AT EOL: html/form-elements/the-textarea-element/multiline-placeholder-cr.html
-CR AT EOL: html/form-elements/the-textarea-element/multiline-placeholder-crlf.html
+CR AT EOL: html/semantics/forms/the-textarea-element/multiline-placeholder-cr.html
+CR AT EOL: html/semantics/forms/the-textarea-element/multiline-placeholder-crlf.html
 CR AT EOL: html/input/the-placeholder-attribute/multiline-cr.html
 CR AT EOL: html/input/the-placeholder-attribute/multiline-crlf.html
 CR AT EOL: webvtt/parsing/file-parsing/tests/support/newlines.vtt
@@ -142,6 +142,7 @@ SET TIMEOUT: cookies/resources/testharness-helpers.js
 SET TIMEOUT: common/reftest-wait.js
 SET TIMEOUT: conformance-checkers/*
 SET TIMEOUT: content-security-policy/*
+SET TIMEOUT: css/css-display/display-contents-shadow-dom-1.html
 SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-001.html
 SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-002.html
 SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-003.html
@@ -175,7 +176,7 @@ SET TIMEOUT: html/webappapis/scripting/events/event-handler-processing-algorithm
 SET TIMEOUT: html/webappapis/scripting/processing-model-2/*
 SET TIMEOUT: IndexedDB/*
 SET TIMEOUT: infrastructure/*
-SET TIMEOUT: intersection-observer/resources/v2-subframe.html
+SET TIMEOUT: intersection-observer/resources/*
 SET TIMEOUT: intersection-observer/target-in-different-window.html
 SET TIMEOUT: media-source/mediasource-util.js
 SET TIMEOUT: media-source/URL-createObjectURL-revoke.html
@@ -185,6 +186,7 @@ SET TIMEOUT: offscreen-canvas/the-offscreen-canvas/*
 SET TIMEOUT: old-tests/submission/Microsoft/history/history_000.htm
 SET TIMEOUT: paint-timing/resources/subframe-painting.html
 SET TIMEOUT: payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html
+SET TIMEOUT: portals/resources/portals-adopt-predecessor-portal.html
 SET TIMEOUT: preload/single-download-preload.html
 SET TIMEOUT: resize-observer/resources/iframe.html
 SET TIMEOUT: resource-timing/resources/nested-contexts.js
@@ -804,4 +806,5 @@ CSS-COLLIDING-REF-NAME: css/vendor-imports/mozilla/mozilla-central-reftests/cont
 
 # Signed Exchange files have hard-coded URLs in the certUrl field
 WEB-PLATFORM.TEST:signed-exchange/resources/*.sxg
+WEB-PLATFORM.TEST:signed-exchange/appcache/resources/*.sxg
 WEB-PLATFORM.TEST:signed-exchange/resources/generate-test-sxgs.sh
