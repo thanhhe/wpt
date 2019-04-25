@@ -101,7 +101,7 @@ class Firefox(Browser):
         product = {
             "nightly": "firefox-nightly-latest-ssl",
             "beta": "firefox-beta-latest-ssl",
-            "stable": "firefox-beta-latest-ssl"
+            "stable": "firefox-latest-ssl"
         }
 
         os_builds = {
@@ -267,7 +267,7 @@ class Firefox(Browser):
         if version:
             dest = os.path.join(dest, version)
         have_cache = False
-        if os.path.exists(dest):
+        if os.path.exists(dest) and len(os.listdir(dest)) > 0:
             if channel != "nightly":
                 have_cache = True
             else:
@@ -304,7 +304,7 @@ class Firefox(Browser):
         # This is used rather than an API call to avoid rate limits
         tags = call("git", "ls-remote", "--tags", "--refs",
                     "https://github.com/mozilla/geckodriver.git")
-        release_re = re.compile(".*refs/tags/v(\d+)\.(\d+)\.(\d+)")
+        release_re = re.compile(r".*refs/tags/v(\d+)\.(\d+)\.(\d+)")
         latest_release = 0
         for item in tags.split("\n"):
             m = release_re.match(item)
@@ -464,29 +464,31 @@ class Chrome(Browser):
     def _latest_chromedriver_url(self, browser_binary=None):
         latest = None
         chrome_version = self.version(browser_binary)
-        if chrome_version is not None:
-            parts = chrome_version.split(".")
-            if len(parts) == 4:
-                latest_url = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_%s.%s.%s" % (
-                    parts[0], parts[1], parts[2])
+        assert chrome_version, "Cannot detect the version of Chrome"
+
+        # Remove channel suffixes (e.g. " dev").
+        chrome_version = chrome_version.split(' ')[0]
+        parts = chrome_version.split(".")
+        if len(parts) == 4:
+            latest_url = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_%s.%s.%s" % tuple(parts[:-1])
+            try:
+                latest = get(latest_url).text.strip()
+            except requests.RequestException:
+                latest_url = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_%s" % parts[0]
                 try:
                     latest = get(latest_url).text.strip()
                 except requests.RequestException:
-                    latest_url = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_%s" % parts[0]
-                    try:
-                        latest = get(latest_url).text.strip()
-                    except requests.RequestException:
-                        pass
+                    pass
         if latest is None:
-            # Fall back to the tip-of-tree *Chromium* build.
-            latest_url = "https://storage.googleapis.com/chromium-browser-snapshots/%s/LAST_CHANGE" % (
-                self.chromium_platform_string())
-            latest = get(latest_url).text.strip()
+            # Fall back to *Chromium* build archives.
+            omaha = get("https://omahaproxy.appspot.com/deps.json?version=" + chrome_version).json()
+            revision = omaha['chromium_base_position']
             url = "https://storage.googleapis.com/chromium-browser-snapshots/%s/%s/chromedriver_%s.zip" % (
-                self.chromium_platform_string(), latest, self.platform_string())
+                self.chromium_platform_string(), revision, self.platform_string())
         else:
             url = "https://chromedriver.storage.googleapis.com/%s/chromedriver_%s.zip" % (
                 latest, self.platform_string())
+
         return url
 
     def install_webdriver(self, dest=None, channel=None, browser_binary=None):
