@@ -1,5 +1,6 @@
 import os
 import subprocess
+import urlparse
 from six.moves.urllib.parse import urljoin
 from collections import defaultdict
 
