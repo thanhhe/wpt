@@ -3,24 +3,29 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script>
-  async_test(function(t) {
-    var test = "adopt-once";
-    var bc = new BroadcastChannel(`test-${test}`);
-    bc.onmessage = t.step_func_done(function(e) {
-      assert_equals(e.data, "passed");
-      bc.close();
+  function waitForCompletion(t, test) {
+    return new Promise((resolve, reject) => {
+      window.addEventListener("message", t.step_func(e => {
+         if (e.data.test === test)
+           resolve(e.data);
+      }));
     });
+  }
+
+  async_test(async t => {
+    var test = "adopt-once";
     window.open(`resources/portals-adopt-predecessor.html?test=${test}`);
+    var e = await waitForCompletion(t, test);
+    assert_equals(e.message, "adopted");
+    t.done();
   }, "Tests that a portal can adopt its predecessor.");
 
-  async_test(function(t) {
+  async_test(async t => {
     var test = "adopt-twice";
-    var bc = new BroadcastChannel(`test-${test}`);
-    bc.onmessage = t.step_func_done(function(e) {
-      assert_equals(e.data, "passed");
-      bc.close();
-    });
     window.open(`resources/portals-adopt-predecessor.html?test=${test}`);
+    var e = await waitForCompletion(t, test);
+    assert_equals(e.message, "passed");
+    t.done();
   }, "Tests that trying to adopt the predecessor twice will throw an exception.");
 
   async_test(function(t) {
