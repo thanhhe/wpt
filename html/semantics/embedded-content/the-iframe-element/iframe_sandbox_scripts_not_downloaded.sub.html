@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Sandboxed &lt;iframe&gt; does not download scripts</title>
+<link rel="help" href="https://html.spec.whatwg.org/multipage/#attr-iframe-sandbox">
+<link rel="help" href="https://html.spec.whatwg.org/multipage/#the-iframe-element">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support/iframe_sandbox_download_helper.js"></script>
+<body>
+<script>
+  // Creates and appends an <iframe> with the given |attributes| and resolves
+  // the promise when <iframe> loads.
+  function create_iframe(attributes) {
+    return new Promise( (resolve) => {
+      const iframe = document.createElement("iframe");
+      for (attr in attributes)
+        iframe[attr] = attributes[attr];
+      document.body.appendChild(iframe);
+      iframe.addEventListener("load",  () => { resolve(iframe); });
+    });
+  }
+
+  promise_test( async (t) => {
+    const iframe = await create_iframe({
+      sandbox: 'allow-same-origin',
+      srcdoc: '<p> scripts sandboxed </p>'
+    });
+    const script = document.createElement("script");
+    const token = "${{$id:uuid()}}";
+    script.src = `support/download_stash.py?token=${token}`;
+    iframe.contentDocument.body.appendChild(script);
+    AssertDownloadFailure(t, token, 0);
+  },  "Verify that a resource request for <script> is not sent when frame is sandboxed.");
+
+  promise_test( async (t) => {
+    const iframe = await create_iframe({
+      srcdoc: '<p> not sandboxed </p>'
+    });
+    const script = document.createElement("script");
+    const token = "${{$id:uuid()}}";
+    script.src = `support/download_stash.py?token=${token}`;
+    iframe.contentDocument.body.appendChild(script);
+    AssertDownloadSuccess(t, token, 0);
+  },  "Verify that a resource request for <script> is sent when frame is not sandboxed.");
+
+</script>
+</body>
